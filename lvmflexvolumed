@@ -1,0 +1,31 @@
+#!/bin/sh
+
+trap "RUNNING=false" SIGINT SIGTERM
+
+LOCK_SECONDS=59
+LOCK_TIMEOUT=300
+NAME=lvmflexvolumed
+RUNNING=true
+
+if [ -f /etc/sysconfig/lvmflexvolumed ]; then
+    source /etc/sysconfig/lvmflexvolumed
+fi
+if [ -f /etc/default/lvmflexvolumed ]; then
+    source /etc/default/lvmflexvolumed
+fi
+
+while ${RUNNING}; do
+    # Update Tag
+    : $(vgscan --cache)
+    : $(lvscan --cache)
+    newtag="lock-$(date +%s)"
+    IFS=$'\n' && for line in $(lvdisplay -C -o lv_path,tags --noheadings | grep host-$(hostname -s)); do
+        device=$(echo $line | awk '{print $1}')
+        tags=$(echo $line | awk '{print $2}')
+        for tag in $(echo $tags | tr "," "\n" | grep lock); do
+            logger -t ${NAME} "Update lock tag for ${device} ${tag} becomes ${newtag}"
+            : $(lvchange --deltag ${tag} --addtag ${newtag} $device)
+        done
+    done
+    sleep ${LOCK_SECONDS}
+done

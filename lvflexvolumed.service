@@ -1,0 +1,8 @@
+[Unit]
+Description=LVM lock manager for K8S FlexVolume
+
+[Service]
+ExecStart=/usr/local/bin/lvmflexvolumed
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
