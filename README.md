@@ -17,18 +17,36 @@ Once configured/installed the shared volume, you need to set-up a cluster-based 
     CentOS
 
     # All nodes
-    yum install lvmlockd sanlock jq
+    yum install lvm2-lockd sanlock jq
+    systemctl enable wdmd
+    systemctl enable sanlock
+    systemctl enable lvm2-lvmlockd
+    systemctl start wdmd
+    systemctl start sanlock
+    systemctl start lvm2-lvmlockd
 
-    cat <<\EOF | tee -a /etc/lvm/lvm.local.conf
-
+    # Edit and customize lvmlocal.conf with host_id and vg list
+    cat <<\EOF | tee -a /etc/lvm/lvmlocal.conf
+    global {
+        use_lvmlockd = 1
+    }
+    activation {
+        auto_activation_volume_list = [ "put_here_all_vg_except_the_shared_one" ]
+    }
+    local {
+        host_id = 1..2000
+    }
     EOF
 
     # Single node
     vgcreate --shared sharevg /dev/sdx
     lvcreate -L10G -n sharedlv /dev/sharevg
     mkfs.ext4 /dev/sharevg/sharedlv
+    vgchange --lock-start
 
     # All nodes
+    vgchange --lock-start
+
 
 Once cloned the repo you can:
 
