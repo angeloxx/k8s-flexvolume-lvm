@@ -1,6 +1,6 @@
 # Introduction
 
-This set of script is intended to be used in Kubernetes to manage a shared volume between nodes without the need of an external provider like Ceph. These scripts are based on:
+This set of script is intended to be used in Kubernetes to manage a shared volume between nodes without (with a single-instance POD with persistent data like MySQL) the need of an external provider like Ceph. These scripts are based on:
 - Kubernetes flexVolume volume adapter that supports a plugin architecture based on a shell script. The standard LVM adapter is extended to manage simple lock (see https://github.com/kubernetes/kubernetes/tree/master/examples/volumes/flexvolume)
 - lvmlockd and sanlock that is used to manage the shared LVM volume without the complexity of a cluster (pacemaker and clvmd)
 - a shared volume provided by a physically shared storage or a shared VMDK file in VMware (my preferred solutions)
